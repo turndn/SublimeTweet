@@ -15,8 +15,9 @@ def read_default_settings():
     return settings_obj
 
 setting_data = read_default_settings()
-site_packages_path = setting_data['site_packages_path']
-sys.path.append(site_packages_path)
+for path in setting_data['site_packages_path']:
+	site_packages_path = path
+	sys.path.append(site_packages_path)
 import tweepy
 
 import sublime, sublime_plugin
