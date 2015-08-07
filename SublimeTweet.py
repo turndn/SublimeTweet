@@ -94,6 +94,13 @@ class TweetCommand(sublime_plugin.TextCommand):
 
 			else :
 				self.view.insert(edit, 0, self.tweet(text))
+
+		elif len(text) == 0:
+			timeline = self.get_my()
+			for tweet in timeline:
+				self.view.insert(edit, 0, tweet)
+			self.view.insert(edit, 0, "\n")
+
 		else :
 			self.view.insert(edit, 0, self.tweet(text))
 
