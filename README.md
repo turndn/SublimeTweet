@@ -11,7 +11,7 @@ Selected string is command.
 	- 何も指定しない場合: そのままツイートする
 	- "rp:_tweet id_,_Value_" リプライを送る
 	- "rt:_tweet id_," リツイートする
-	- "fv:_tweet id_" お気に入り登録する
-	- "dl:_tweet id_" ツイートを削除する
+	- "fv:_tweet id_," お気に入り登録する
+	- "dl:_tweet id_," ツイートを削除する
 	- "ll:" リストの一覧を取得
 	- "lt:_screen name_,_list name_,"リストのタイムラインを取得
