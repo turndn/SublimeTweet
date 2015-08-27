@@ -7,14 +7,14 @@ import os
 __file__ = os.path.normpath(os.path.abspath(__file__))
 __path__ = os.path.dirname(__file__)
 
-def read_default_settings():
-    default_settings_filename = os.path.join(__path__, 'default_settings.json')
-    default_settings_filename = os.path.normpath(default_settings_filename)
-    with open(default_settings_filename) as f:
+def read_settings():
+    settings_filename = os.path.join(__path__, 'default_settings.json')
+    settings_filename = os.path.normpath(settings_filename)
+    with open(settings_filename) as f:
         settings_obj = json.load(f)
     return settings_obj
 
-setting_data = read_default_settings()
+setting_data = read_settings()
 for path in setting_data['site_packages_path']:
 	site_packages_path = path
 	sys.path.append(site_packages_path)
