@@ -93,6 +93,24 @@ class TweetCommand(sublime_plugin.TextCommand):
 					tweet_id = text[op:firstarg]
 					self.view.insert(edit, 0, self.destroy_tweet(tweet_id))
 
+			elif HEAD == 'cf' and OPR == ':':
+				firstarg = text.find(',')
+				if firstarg != -1:
+					user_id = text[op:firstarg]
+					self.view.insert(edit, 0, self.create_friend(user_id))
+
+			elif HEAD == 'df' and OPR == ':':
+				firstarg = text.find(',')
+				if firstarg != -1:
+					user_id = text[op:firstarg]
+					self.view.insert(edit, 0, self.destroy_friend(user_id))
+
+			elif HEAD == 'il' and OPR == ':':
+				lists = self.friendship_incoming()
+				for val in lists:
+					self.view.insert(edit, 0, val)
+				self.view.insert(edit, 0, "\n")
+
 			else :
 				self.view.insert(edit, 0, self.tweet(text))
 
@@ -150,7 +168,7 @@ class TweetCommand(sublime_plugin.TextCommand):
 	def get_timeline(self, public_tweets):
 		timeline = []
 		for tweet in public_tweets:
-			timeline.append(str(tweet.id) + ": @" + tweet.user.screen_name + 
+			timeline.append(str(tweet.id) + ", @" + tweet.user.screen_name + 
 				" " + tweet.text + "\n")
 		timeline.reverse()
 		return timeline
@@ -159,7 +177,10 @@ class TweetCommand(sublime_plugin.TextCommand):
 		Lists = self.api.lists_all()
 		listids = []
 		for val in Lists:
-			listids.append(val.full_name + ": " + val.name + "\n")
+			string = val.full_name + ", " + val.name + "\n"
+			string = string.replace('/', ',')
+			listids.append(string)
+			# listids.append(val.full_name + ", " + val.name + "\n")
 		return listids
 
 	def get_my(self):
@@ -170,3 +191,26 @@ class TweetCommand(sublime_plugin.TextCommand):
 		public_tweets = self.api.list_timeline(owner_screen_name=screen_name, 
 			slug=listid)
 		return self.get_timeline(public_tweets)
+
+	def create_friend(self, user_id):
+		try:
+			self.api.create_friendship(user_id)
+			return "finish\n"
+		except:
+			return "error\n"
+
+	def destroy_friend(self, user_id):
+		try:
+			self.api.destroy_friendship(user_id)
+			return "finish\n"
+		except:
+			return "error\n"
+
+	def friendship_incoming(self):
+		Lists = self.api.friendships_incoming()
+		listids = []
+		for val in Lists:
+			listids.append(str(val) + "\n")
+		return listids
+
+
