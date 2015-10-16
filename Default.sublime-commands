@@ -2,5 +2,10 @@
 	{
 		"caption": "Tweet: tweet",
 		"command": "tweet"
-	}
+	},
+    {
+        "command": "open_file",
+        "args": {"file": "${packages}/SublimeTweet/default_settings.json"},
+        "caption": "SublimeTweet: Settings – Default"
+    }
 ]

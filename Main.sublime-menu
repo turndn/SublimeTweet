@@ -1,0 +1,34 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "SublimeTweet",
+                        "children":
+                        [
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/SublimeTweet/README.md"},
+                                "caption": "README"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/SublimeTweet/Slack.sublime-settings"},
+                                "caption": "Settings – Default"
+                            },
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
