@@ -23,7 +23,7 @@ import tweepy
 
 import sublime, sublime_plugin
 
-class TweetturndnCommand(sublime_plugin.TextCommand):
+class TweetCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         selection = self.view.sel()[0]
