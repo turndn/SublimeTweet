@@ -65,7 +65,7 @@ class TweetCommand(sublime_plugin.TextCommand):
                 firstarg = text.find(',')
                 if firstarg != -1:
                     in_reply_to_status_id = text[op:firstarg]
-                    # sublime.message_dialog(self.tweet(text[firstarg+1:], in_reply_to_status_id))
+                    sublime.message_dialog(self.tweet(text[firstarg+1:], in_reply_to_status_id))
 
             elif HEAD == 'll' and OPR == ':':
                 lists = self.get_list()
@@ -123,8 +123,10 @@ class TweetCommand(sublime_plugin.TextCommand):
                     self.view.insert(edit, 0, val)
                 self.view.insert(edit, 0, "\n")
 
+            elif OPR == ':':
+                sublime.message_dialog("Command not found\n")
+
             else:
-                # pass
                 sublime.message_dialog(self.tweet(text))
 
         elif len(text) == 0:
@@ -142,21 +144,24 @@ class TweetCommand(sublime_plugin.TextCommand):
 
     def tweet(self, text, reply_id = None):
         self.api.update_status(status = text, in_reply_to_status_id = reply_id)
-        return "finish\n"
+        if reply_id == None:
+            return "Updated status\n"
+        else:
+            return "Updated status(reply)\n"
 
     def destroy_tweet(self, tweet_id):
         try:
             self.api.destroy_status(tweet_id)
-            return "finish\n"
+            return "Destroyed status\n"
         except:
-            return "error\n"
+            return "Error (destroy tweet)\n"
 
     def retweet(self, tweet_id):
         try:
             self.api.retweet(tweet_id)
-            return "finish\n"
+            return "Retweeted\n"
         except:
-            return "error\n"
+            return "Error (retweet)\n"
 
     def favorite(self, tweet_id):
         favorited = self.tweet_detail(tweet_id).favorited
@@ -168,16 +173,16 @@ class TweetCommand(sublime_plugin.TextCommand):
     def create_fav(self, tweet_id):
         try:
             self.api.create_favorite(tweet_id)
-            return "finish\n"
+            return "Created favorite\n"
         except:
-            return "error\n"
+            return "Error (create favorite)\n"
 
     def destroy_fav(self, tweet_id):
         try:
             self.api.destroy_favorite(tweet_id)
-            return "finish\n"
+            return "Destroyed favorite\n"
         except:
-            return "error\n"
+            return "Error (destroy favorite)\n"
 
     def get_timeline(self, public_tweets):
         timeline = []
@@ -210,16 +215,16 @@ class TweetCommand(sublime_plugin.TextCommand):
     def create_friend(self, user_id):
         try:
             self.api.create_friendship(user_id)
-            return "finish\n"
+            return "Created friend\n"
         except:
-            return "error\n"
+            return "Error (create friend)\n"
 
     def destroy_friend(self, user_id):
         try:
             self.api.destroy_friendship(user_id)
-            return "finish\n"
+            return "Destroyed friend\n"
         except:
-            return "error\n"
+            return "Error (destroy friend)\n"
 
     def get_user_timeline(self, screen_name=''):
         public_tweets = self.api.user_timeline(screen_name=self.api.me().screen_name)
