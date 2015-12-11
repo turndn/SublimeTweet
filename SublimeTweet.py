@@ -23,7 +23,7 @@ import tweepy
 
 import sublime, sublime_plugin
 
-class TweetCommand(sublime_plugin.TextCommand):
+class TweetturndnCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         selection = self.view.sel()[0]
@@ -38,7 +38,7 @@ class TweetCommand(sublime_plugin.TextCommand):
 
         try:
             self.api = tweepy.API(auth)
-            # threading.Thread(target=self.tweetmain, args=[text, edit]).start()
+            # threading.Thread(target=self.tweetmain, args=(text, edit)).start()
             self.tweetmain(text, edit)
         except:
             sublime.error_message('Error! Enter your consumer_key, consumer_secret, access_token, access_token_secret in default_settings')
@@ -55,11 +55,17 @@ class TweetCommand(sublime_plugin.TextCommand):
                     self.view.insert(edit, 0, tweet)
                 self.view.insert(edit, 0, "\n")
 
+            elif HEAD == 'mt' and OPR == ':':
+                timeline = self.get_user_timeline()
+                for tweet in timeline:
+                    self.view.insert(edit, 0, tweet)
+                self.view.insert(edit, 0, "\n")
+
             elif HEAD == 'rp' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     in_reply_to_status_id = text[op:firstarg]
-                    sublime.message_dialog(self.tweet(text[firstarg+1:], in_reply_to_status_id))
+                    # sublime.message_dialog(self.tweet(text[firstarg+1:], in_reply_to_status_id))
 
             elif HEAD == 'll' and OPR == ':':
                 lists = self.get_list()
@@ -81,13 +87,13 @@ class TweetCommand(sublime_plugin.TextCommand):
                             self.view.insert(edit, 0, tweet)
                 self.view.insert(edit, 0, "\n")
 
-            elif HEAD == 'rt' and OPR ==':':
+            elif HEAD == 'rt' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
                     sublime.message_dialog(self.retweet(tweet_id))
 
-            elif HEAD == 'fv' and OPR ==':':
+            elif HEAD == 'fv' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
@@ -117,7 +123,8 @@ class TweetCommand(sublime_plugin.TextCommand):
                     self.view.insert(edit, 0, val)
                 self.view.insert(edit, 0, "\n")
 
-            else :
+            else:
+                # pass
                 sublime.message_dialog(self.tweet(text))
 
         elif len(text) == 0:
@@ -126,8 +133,9 @@ class TweetCommand(sublime_plugin.TextCommand):
                 self.view.insert(edit, 0, tweet)
             self.view.insert(edit, 0, "\n")
 
-        else :
-            sublime.message_dialog(self.tweet(text))
+        else:
+            pass
+            # sublime.message_dialog(self.tweet(text))
 
     def tweet_detail(self, tweet_id):
         return self.api.get_status(tweet_id)
@@ -174,8 +182,10 @@ class TweetCommand(sublime_plugin.TextCommand):
     def get_timeline(self, public_tweets):
         timeline = []
         for tweet in public_tweets:
-            timeline.append(str(tweet.id) + ", @" + tweet.user.screen_name + 
-                " " + tweet.text + "\n")
+            timeline.append(str(tweet.id) + ", @" + tweet.user.screen_name +
+                "\n" + tweet.text + "\n" +
+                "RT: " + str(tweet.retweet_count) + ", " +
+                "fav: " + str(tweet.favorite_count) + "\n")
         timeline.reverse()
         return timeline
 
@@ -193,7 +203,7 @@ class TweetCommand(sublime_plugin.TextCommand):
         return self.get_timeline(public_tweets)
 
     def get_list_timeline(self, screen_name, listid):
-        public_tweets = self.api.list_timeline(owner_screen_name=screen_name, 
+        public_tweets = self.api.list_timeline(owner_screen_name=screen_name,
             slug=listid)
         return self.get_timeline(public_tweets)
 
@@ -211,11 +221,13 @@ class TweetCommand(sublime_plugin.TextCommand):
         except:
             return "error\n"
 
+    def get_user_timeline(self, screen_name=''):
+        public_tweets = self.api.user_timeline(screen_name=self.api.me().screen_name)
+        return self.get_timeline(public_tweets)
+
     def friendship_incoming(self):
         Lists = self.api.friendships_incoming()
         listids = []
         for val in Lists:
             listids.append(str(val) + "\n")
         return listids
-
-
