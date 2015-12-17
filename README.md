@@ -18,9 +18,10 @@ site\_packages\_pathでtweepyのパスを通すので,tweepyのある場所を�
 	- "dl:_tweet id_," ツイートを削除する
 	- "ll:" リストの一覧を取得
 	- "lt:_screen name_,_list name_," リストのタイムラインを取得
-	- "cf:_user id_," ユーザをフォローする
-	- "df:_user id_," ユーザをアンフォローする
+	- "cf:_screen name_," ユーザをフォローする
+	- "df:_screen name_," ユーザをアンフォローする
 	- "il:" フォローリクエスト一覧を表示する
+  - "mt:" 自分のツイートを取得する
 
 ##コマンドパレットからの実行
 文字を選択した状態でコマンドパレットの"Tweet: tweet"を選ぶ.
