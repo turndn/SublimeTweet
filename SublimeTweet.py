@@ -108,14 +108,14 @@ class TweetCommand(sublime_plugin.TextCommand):
             elif HEAD == 'cf' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
-                    user_id = text[op:firstarg]
-                    sublime.message_dialog(self.create_friend(user_id))
+                    screen_name = text[op:firstarg]
+                    sublime.message_dialog(self.create_friend(screen_name))
 
             elif HEAD == 'df' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
-                    user_id = text[op:firstarg]
-                    sublime.message_dialog(self.destroy_friend(user_id))
+                    screen_name = text[op:firstarg]
+                    sublime.message_dialog(self.destroy_friend(screen_name))
 
             elif HEAD == 'il' and OPR == ':':
                 lists = self.friendship_incoming()
@@ -212,14 +212,24 @@ class TweetCommand(sublime_plugin.TextCommand):
             slug=listid)
         return self.get_timeline(public_tweets)
 
-    def create_friend(self, user_id):
+    def create_friend(self, screen_name):
+        try:
+            user_id = self.api.get_user(screen_name=screen_name).id
+        except:
+            return "Error (user not found or other issue)"
+            
         try:
             self.api.create_friendship(user_id)
             return "Created friend\n"
         except:
             return "Error (create friend)\n"
 
-    def destroy_friend(self, user_id):
+    def destroy_friend(self, screen_name):
+        try:
+            user_id = self.api.get_user(screen_name=screen_name).id
+        except:
+            return "Error (user not found or other issue)"
+
         try:
             self.api.destroy_friendship(user_id)
             return "Destroyed friend\n"
