@@ -38,7 +38,6 @@ class TweetCommand(sublime_plugin.TextCommand):
 
         try:
             self.api = tweepy.API(auth)
-            # threading.Thread(target=self.tweetmain, args=(text, edit)).start()
             self.tweetmain(text, edit)
         except:
             sublime.error_message('Error! Enter your consumer_key, consumer_secret, access_token, access_token_secret in default_settings')
@@ -65,7 +64,7 @@ class TweetCommand(sublime_plugin.TextCommand):
                 firstarg = text.find(',')
                 if firstarg != -1:
                     in_reply_to_status_id = text[op:firstarg]
-                    sublime.message_dialog(self.tweet(text[firstarg+1:], in_reply_to_status_id))
+                    threading.Thread(target=self.tweet, kwargs={"text":text[firstarg+1:], "reply_id":in_reply_to_status_id}).start()
 
             elif HEAD == 'll' and OPR == ':':
                 lists = self.get_list()
@@ -91,31 +90,31 @@ class TweetCommand(sublime_plugin.TextCommand):
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    sublime.message_dialog(self.retweet(tweet_id))
+                    threading.Thread(target=self.retweet, kwargs={"tweet_id":tweet_id}).start()
 
             elif HEAD == 'fv' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    sublime.message_dialog(self.favorite(tweet_id))
+                    threading.Thread(target=self.favorite, kwargs={"tweet_id":tweet_id}).start()
 
             elif HEAD == 'dl' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    sublime.message_dialog(self.destroy_tweet(tweet_id))
+                    threading.Thread(target=self.destroy_tweet, kwargs={"tweet_id":tweet_id}).start()
 
             elif HEAD == 'cf' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     screen_name = text[op:firstarg]
-                    sublime.message_dialog(self.create_friend(screen_name))
+                    threading.Thread(target=self.create_friend, kwargs={"screen_name":screen_name}).start()
 
             elif HEAD == 'df' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     screen_name = text[op:firstarg]
-                    sublime.message_dialog(self.destroy_friend(screen_name))
+                    threading.Thread(target=self.destroy_friend, kwargs={"screen_name":screen_name}).start()
 
             elif HEAD == 'il' and OPR == ':':
                 lists = self.friendship_incoming()
@@ -127,7 +126,7 @@ class TweetCommand(sublime_plugin.TextCommand):
                 sublime.message_dialog("Command not found\n")
 
             else:
-                sublime.message_dialog(self.tweet(text))
+                threading.Thread(target=self.tweet, kwargs={"text":text}).start()
 
         elif len(text) == 0:
             timeline = self.get_my()
@@ -136,8 +135,7 @@ class TweetCommand(sublime_plugin.TextCommand):
             self.view.insert(edit, 0, "\n")
 
         else:
-            pass
-            # sublime.message_dialog(self.tweet(text))
+            threading.Thread(target=self.tweet, kwargs={"text":text}).start()
 
     def tweet_detail(self, tweet_id):
         return self.api.get_status(tweet_id)
@@ -145,30 +143,30 @@ class TweetCommand(sublime_plugin.TextCommand):
     def tweet(self, text, reply_id = None):
         self.api.update_status(status = text, in_reply_to_status_id = reply_id)
         if reply_id == None:
-            return "Updated status\n"
+            sublime.message_dialog("Updated status\n")
         else:
-            return "Updated status(reply)\n"
+            sublime.message_dialog("Updated status(reply)\n")
 
     def destroy_tweet(self, tweet_id):
         try:
             self.api.destroy_status(tweet_id)
-            return "Destroyed status\n"
+            sublime.message_dialog("Destroyed status\n")
         except:
-            return "Error (destroy tweet)\n"
+            sublime.message_dialog("Error (destroy tweet)\n")
 
     def retweet(self, tweet_id):
         try:
             self.api.retweet(tweet_id)
-            return "Retweeted\n"
+            sublime.message_dialog("Retweeted\n")
         except:
-            return "Error (retweet)\n"
+            sublime.message_dialog("Error (retweet)\n")
 
     def favorite(self, tweet_id):
         favorited = self.tweet_detail(tweet_id).favorited
         if not favorited:
-            return self.create_fav(tweet_id)
+            sublime.message_dialog(self.create_fav(tweet_id))
         else:
-            return self.destroy_fav(tweet_id)
+            sublime.message_dialog(self.destroy_fav(tweet_id))
 
     def create_fav(self, tweet_id):
         try:
@@ -216,25 +214,25 @@ class TweetCommand(sublime_plugin.TextCommand):
         try:
             user_id = self.api.get_user(screen_name=screen_name).id
         except:
-            return "Error (user not found or other issue)"
+            sublime.message_dialog("Error (user not found or other issue)")
             
         try:
             self.api.create_friendship(user_id)
-            return "Created friend\n"
+            sublime.message_dialog("Created friend\n")
         except:
-            return "Error (create friend)\n"
+            sublime.message_dialog("Error (create friend)\n")
 
     def destroy_friend(self, screen_name):
         try:
             user_id = self.api.get_user(screen_name=screen_name).id
         except:
-            return "Error (user not found or other issue)"
+            sublime.message_dialog("Error (user not found or other issue)")
 
         try:
             self.api.destroy_friendship(user_id)
-            return "Destroyed friend\n"
+            sublime.message_dialog("Destroyed friend\n")
         except:
-            return "Error (destroy friend)\n"
+            sublime.message_dialog("Error (destroy friend)\n")
 
     def get_user_timeline(self, screen_name=''):
         public_tweets = self.api.user_timeline(screen_name=self.api.me().screen_name)
