@@ -136,6 +136,10 @@ class TweetCommand(sublime_plugin.TextCommand):
 
         else:
             threading.Thread(target=self.tweet, kwargs={"text":text}).start()
+        reply = "^@[a-zA-Z0-9\_]*"
+        retweet = "^RT @[a-zA-Z0-9\_]*:"
+        self.view.add_regions('Reply', self.view.find_all(reply), "invalid", "", sublime.DRAW_SQUIGGLY_UNDERLINE)
+        self.view.add_regions('Retweet', self.view.find_all(retweet), "invalid", "", sublime.DRAW_SQUIGGLY_UNDERLINE)
 
     def tweet_detail(self, tweet_id):
         return self.api.get_status(tweet_id)
