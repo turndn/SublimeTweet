@@ -1,4 +1,4 @@
-#! coding: utf-8
+# coding: utf-8
 
 import sys
 import json
@@ -7,6 +7,7 @@ import threading
 
 __file__ = os.path.normpath(os.path.abspath(__file__))
 __path__ = os.path.dirname(__file__)
+
 
 def read_settings():
     settings_filename = os.path.join(__path__, 'default_settings.json')
@@ -19,9 +20,10 @@ setting_data = read_settings()
 for path in setting_data['site_packages_path']:
     site_packages_path = path
     sys.path.append(site_packages_path)
-import tweepy
 
+import tweepy
 import sublime, sublime_plugin
+
 
 class TweetCommand(sublime_plugin.TextCommand):
 
@@ -144,9 +146,9 @@ class TweetCommand(sublime_plugin.TextCommand):
     def tweet_detail(self, tweet_id):
         return self.api.get_status(tweet_id)
 
-    def tweet(self, text, reply_id = None):
+    def tweet(self, text, reply_id=None):
         self.api.update_status(status = text, in_reply_to_status_id = reply_id)
-        if reply_id == None:
+        if not reply_id:
             sublime.message_dialog("Updated status\n")
         else:
             sublime.message_dialog("Updated status(reply)\n")
@@ -190,9 +192,9 @@ class TweetCommand(sublime_plugin.TextCommand):
         timeline = []
         for tweet in public_tweets:
             timeline.append(str(tweet.id) + ", @" + tweet.user.screen_name +
-                "\n" + tweet.text + "\n" +
-                "RT: " + str(tweet.retweet_count) + ", " +
-                "fav: " + str(tweet.favorite_count) + "\n")
+                            "\n" + tweet.text + "\n" +
+                            "RT: " + str(tweet.retweet_count) + ", " +
+                            "fav: " + str(tweet.favorite_count) + "\n")
         timeline.reverse()
         return timeline
 
@@ -210,8 +212,8 @@ class TweetCommand(sublime_plugin.TextCommand):
         return self.get_timeline(public_tweets)
 
     def get_list_timeline(self, screen_name, listid):
-        public_tweets = self.api.list_timeline(owner_screen_name=screen_name,
-            slug=listid)
+        public_tweets = self.api.list_timeline(
+            owner_screen_name=screen_name, slug=listid)
         return self.get_timeline(public_tweets)
 
     def create_friend(self, screen_name):
@@ -219,7 +221,7 @@ class TweetCommand(sublime_plugin.TextCommand):
             user_id = self.api.get_user(screen_name=screen_name).id
         except:
             sublime.message_dialog("Error (user not found or other issue)")
-            
+
         try:
             self.api.create_friendship(user_id)
             sublime.message_dialog("Created friend\n")
@@ -239,7 +241,8 @@ class TweetCommand(sublime_plugin.TextCommand):
             sublime.message_dialog("Error (destroy friend)\n")
 
     def get_user_timeline(self, screen_name=''):
-        public_tweets = self.api.user_timeline(screen_name=self.api.me().screen_name)
+        public_tweets = self.api.user_timeline(
+            screen_name=self.api.me().screen_name)
         return self.get_timeline(public_tweets)
 
     def friendship_incoming(self):
