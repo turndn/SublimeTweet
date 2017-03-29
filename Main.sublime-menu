@@ -22,7 +22,7 @@
                             },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/SublimeTweet/Slack.sublime-settings"},
+                                "args": {"file": "${packages}/SublimeTweet/default_settings.json"},
                                 "caption": "Settings – Default"
                             },
                         ]
