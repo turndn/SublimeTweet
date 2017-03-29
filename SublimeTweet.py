@@ -10,7 +10,7 @@ __path__ = os.path.dirname(__file__)
 
 
 def read_settings():
-    settings_filename = os.path.join(__path__, 'default_settings.json')
+    settings_filename = os.path.join(__path__, 'settings.json')
     settings_filename = os.path.normpath(settings_filename)
     with open(settings_filename) as f:
         settings_obj = json.load(f)
