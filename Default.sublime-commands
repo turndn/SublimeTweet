@@ -5,7 +5,7 @@
 	},
     {
         "command": "open_file",
-        "args": {"file": "${packages}/SublimeTweet/default_settings.json"},
+        "args": {"file": "${packages}/SublimeTweet/settings.json"},
         "caption": "SublimeTweet: Settings – Default"
     }
 ]
