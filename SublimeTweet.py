@@ -42,7 +42,9 @@ class TweetCommand(sublime_plugin.TextCommand):
             self.api = tweepy.API(auth)
             self.tweetmain(text, edit)
         except:
-            sublime.error_message('Error! Enter your consumer_key, consumer_secret, access_token, access_token_secret in default_settings')
+            sublime.error_message(('Error! Enter your consumer_key, consumer_s'
+                                   'ecret, access_token, access_token_secret i'
+                                   'n default_settings'))
 
     def tweetmain(self, text, edit):
         if len(text) > 2:
@@ -66,7 +68,11 @@ class TweetCommand(sublime_plugin.TextCommand):
                 firstarg = text.find(',')
                 if firstarg != -1:
                     in_reply_to_status_id = text[op:firstarg]
-                    threading.Thread(target=self.tweet, kwargs={"text":text[firstarg+1:], "reply_id":in_reply_to_status_id}).start()
+                    threading.Thread(
+                        target=self.tweet,
+                        kwargs={"text": text[firstarg+1:],
+                                "reply_id": in_reply_to_status_id}
+                    ).start()
 
             elif HEAD == 'll' and OPR == ':':
                 lists = self.get_list()
@@ -92,31 +98,46 @@ class TweetCommand(sublime_plugin.TextCommand):
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    threading.Thread(target=self.retweet, kwargs={"tweet_id":tweet_id}).start()
+                    threading.Thread(
+                        target=self.retweet,
+                        kwargs={"tweet_id": tweet_id}
+                    ).start()
 
             elif HEAD == 'fv' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    threading.Thread(target=self.favorite, kwargs={"tweet_id":tweet_id}).start()
+                    threading.Thread(
+                        target=self.favorite,
+                        kwargs={"tweet_id": tweet_id}
+                    ).start()
 
             elif HEAD == 'dl' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     tweet_id = text[op:firstarg]
-                    threading.Thread(target=self.destroy_tweet, kwargs={"tweet_id":tweet_id}).start()
+                    threading.Thread(
+                        target=self.destroy_tweet,
+                        kwargs={"tweet_id": tweet_id}
+                    ).start()
 
             elif HEAD == 'cf' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     screen_name = text[op:firstarg]
-                    threading.Thread(target=self.create_friend, kwargs={"screen_name":screen_name}).start()
+                    threading.Thread(
+                        target=self.create_friend,
+                        kwargs={"screen_name": screen_name}
+                    ).start()
 
             elif HEAD == 'df' and OPR == ':':
                 firstarg = text.find(',')
                 if firstarg != -1:
                     screen_name = text[op:firstarg]
-                    threading.Thread(target=self.destroy_friend, kwargs={"screen_name":screen_name}).start()
+                    threading.Thread(
+                        target=self.destroy_friend,
+                        kwargs={"screen_name": screen_name}
+                    ).start()
 
             elif HEAD == 'il' and OPR == ':':
                 lists = self.friendship_incoming()
@@ -128,7 +149,10 @@ class TweetCommand(sublime_plugin.TextCommand):
                 sublime.message_dialog("Command not found\n")
 
             else:
-                threading.Thread(target=self.tweet, kwargs={"text":text}).start()
+                threading.Thread(
+                    target=self.tweet,
+                    kwargs={"text": text}
+                ).start()
 
         elif len(text) == 0:
             timeline = self.get_my()
@@ -137,17 +161,25 @@ class TweetCommand(sublime_plugin.TextCommand):
             self.view.insert(edit, 0, "\n")
 
         else:
-            threading.Thread(target=self.tweet, kwargs={"text":text}).start()
+            threading.Thread(target=self.tweet, kwargs={"text": text}).start()
         reply = "^@[a-zA-Z0-9\_]*"
         retweet = "^RT @[a-zA-Z0-9\_]*:"
-        self.view.add_regions('Reply', self.view.find_all(reply), "invalid", "", sublime.DRAW_SQUIGGLY_UNDERLINE)
-        self.view.add_regions('Retweet', self.view.find_all(retweet), "invalid", "", sublime.DRAW_SQUIGGLY_UNDERLINE)
+        self.view.add_regions('Reply',
+                              self.view.find_all(reply),
+                              "invalid",
+                              "",
+                              sublime.DRAW_SQUIGGLY_UNDERLINE)
+        self.view.add_regions('Retweet',
+                              self.view.find_all(retweet),
+                              "invalid",
+                              "",
+                              sublime.DRAW_SQUIGGLY_UNDERLINE)
 
     def tweet_detail(self, tweet_id):
         return self.api.get_status(tweet_id)
 
     def tweet(self, text, reply_id=None):
-        self.api.update_status(status = text, in_reply_to_status_id = reply_id)
+        self.api.update_status(status=text, in_reply_to_status_id=reply_id)
         if not reply_id:
             sublime.message_dialog("Updated status\n")
         else:
