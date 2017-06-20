@@ -21,8 +21,50 @@ for path in setting_data['site_packages_path']:
     site_packages_path = path
     sys.path.append(site_packages_path)
 
-import tweepy
-import sublime, sublime_plugin
+from tweepy import OAuthHandler, API
+import sublime
+import sublime_plugin
+
+
+def parse_command(cmd_text):
+    if len(cmd_text) < 3:
+        return ('get_timeline')
+    elif cmd_text[2] != ':':
+        return ('update_status', cmd_text)
+    cmd = cmd_text[:2]
+
+    if cmd == 'tl':
+        return ('get_timeline', None)
+    elif cmd == 'mt':
+        username = cmd_text[3:]
+        return ('get_mytimeline', username)
+    elif cmd == 'rp':
+        cmd_list = cmd_text[3:].split(',')
+        return ('reply', cmd_list[1], cmd_list[0])
+    elif cmd == 'll':
+        return ('list_list', None)
+    elif cmd == 'lt':
+        cmd_list = cmd_text[3:].split(',')
+        return ('list_timeline', cmd_list)
+    elif cmd == 'rt':
+        cmd_list = cmd_text[3:].split(',')
+        return ('retweet', cmd_list[0])
+    elif cmd == 'fv':
+        cmd_list = cmd_text[3:].split(',')
+        return ('favorite', cmd_list[0])
+    elif cmd == 'dl':
+        cmd_list = cmd_text[3:].split(',')
+        return ('delete', cmd_list[0])
+    elif cmd == 'cf':
+        cmd_list = cmd_text[3:].split(',')
+        return ('create_friend', cmd_list[0])
+    elif cmd == 'df':
+        cmd_list = cmd_text[3:].split(',')
+        return ('destroy_friend', cmd_list[0])
+    elif cmd == 'il':
+        return ('follow_request_list', None)
+
+    return None
 
 
 class TweetCommand(sublime_plugin.TextCommand):
@@ -35,133 +77,74 @@ class TweetCommand(sublime_plugin.TextCommand):
         access_token = setting_data['access_token']
         access_token_secret = setting_data['access_token_secret']
 
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth = OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
 
         try:
-            self.api = tweepy.API(auth)
+            self.api = API(auth)
             self.tweetmain(text, edit)
-        except:
+        except Exception:
             sublime.error_message(('Error! Enter your consumer_key, consumer_s'
                                    'ecret, access_token, access_token_secret i'
                                    'n default_settings'))
 
     def tweetmain(self, text, edit):
-        if len(text) > 2:
-            HEAD = text[:2]
-            OPR = text[2]
-            op = len(HEAD) + len(OPR)
-
-            if HEAD == 'tl' and OPR == ':':
+        cmd = parse_command(text)
+        if cmd:
+            if cmd[0] == 'get_timeline':
                 timeline = self.get_my()
                 for tweet in timeline:
                     self.view.insert(edit, 0, tweet)
                 self.view.insert(edit, 0, "\n")
-
-            elif HEAD == 'mt' and OPR == ':':
-                timeline = self.get_user_timeline()
+            elif cmd[0] == 'update_status':
+                threading.Thread(target=self.tweet, kwargs={
+                                 "text": cmd[1]}).start()
+            elif cmd[0] == 'get_mytimeline':
+                timeline = self.get_user_timeline(screen_name=cmd[1])
                 for tweet in timeline:
                     self.view.insert(edit, 0, tweet)
                 self.view.insert(edit, 0, "\n")
-
-            elif HEAD == 'rp' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    in_reply_to_status_id = text[op:firstarg]
-                    threading.Thread(
-                        target=self.tweet,
-                        kwargs={"text": text[firstarg+1:],
-                                "reply_id": in_reply_to_status_id}
-                    ).start()
-
-            elif HEAD == 'll' and OPR == ':':
+            elif cmd[0] == 'reply':
+                threading.Thread(target=self.tweet, kwargs={
+                                 "text": cmd[1], "reply_id": cmd[2]}).start()
+            elif cmd[0] == 'favorite':
+                threading.Thread(target=self.favorite, kwargs={
+                                 "tweet_id": cmd[1]}).start()
+            elif cmd[0] == 'delete':
+                threading.Thread(target=self.destroy_tweet, kwargs={
+                                 "tweet_id": cmd[1]}).start()
+            elif cmd[0] == 'list_list':
                 lists = self.get_list()
                 for val in lists:
                     self.view.insert(edit, 0, val)
                 self.view.insert(edit, 0, "\n")
-
-            elif HEAD == 'lt' and OPR == ':':
+            elif cmd[0] == 'list_timeline':
                 timeline = []
-                firstarg = text.find(',')
-                if firstarg != -1 and len(text) > firstarg + 1:
-                    screen_name = text[op:firstarg]
-                    text = text[firstarg+1:]
-                    secondarg = text.find(',')
-                    if secondarg != -1:
-                        listid = text[:secondarg]
-                        timeline = self.get_list_timeline(screen_name, listid)
-                        for tweet in timeline:
-                            self.view.insert(edit, 0, tweet)
+                screen_name = cmd[1][0]
+                listid = cmd[1][1]
+                timeline = self.get_list_timeline(screen_name, listid)
+                for tweet in timeline:
+                    self.view.insert(edit, 0, tweet)
                 self.view.insert(edit, 0, "\n")
-
-            elif HEAD == 'rt' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    tweet_id = text[op:firstarg]
-                    threading.Thread(
-                        target=self.retweet,
-                        kwargs={"tweet_id": tweet_id}
-                    ).start()
-
-            elif HEAD == 'fv' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    tweet_id = text[op:firstarg]
-                    threading.Thread(
-                        target=self.favorite,
-                        kwargs={"tweet_id": tweet_id}
-                    ).start()
-
-            elif HEAD == 'dl' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    tweet_id = text[op:firstarg]
-                    threading.Thread(
-                        target=self.destroy_tweet,
-                        kwargs={"tweet_id": tweet_id}
-                    ).start()
-
-            elif HEAD == 'cf' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    screen_name = text[op:firstarg]
-                    threading.Thread(
-                        target=self.create_friend,
-                        kwargs={"screen_name": screen_name}
-                    ).start()
-
-            elif HEAD == 'df' and OPR == ':':
-                firstarg = text.find(',')
-                if firstarg != -1:
-                    screen_name = text[op:firstarg]
-                    threading.Thread(
-                        target=self.destroy_friend,
-                        kwargs={"screen_name": screen_name}
-                    ).start()
-
-            elif HEAD == 'il' and OPR == ':':
+            elif cmd[0] == 'retweet':
+                threading.Thread(target=self.retweet, kwargs={
+                                 "tweet_id": cmd[1]}).start()
+            elif cmd[0] == 'create_friend':
+                threading.Thread(target=self.create_friend, kwargs={
+                                 "screen_name": cmd[1]}).start()
+            elif cmd[0] == 'destroy_friend':
+                threading.Thread(target=self.destroy_friend, kwargs={
+                                 "screen_name": cmd[1]}).start()
+            elif cmd[0] == 'follow_request_list':
                 lists = self.friendship_incoming()
                 for val in lists:
                     self.view.insert(edit, 0, val)
                 self.view.insert(edit, 0, "\n")
-
-            elif OPR == ':':
-                sublime.message_dialog("Command not found\n")
-
             else:
-                threading.Thread(
-                    target=self.tweet,
-                    kwargs={"text": text}
-                ).start()
-
-        elif len(text) == 0:
-            timeline = self.get_my()
-            for tweet in timeline:
-                self.view.insert(edit, 0, tweet)
-            self.view.insert(edit, 0, "\n")
-
+                sublime.message_dialog("Command not implemented\n")
         else:
-            threading.Thread(target=self.tweet, kwargs={"text": text}).start()
+            sublime.message_dialog("Command not found\n")
+
         reply = "^@[a-zA-Z0-9\_]*"
         retweet = "^RT @[a-zA-Z0-9\_]*:"
         self.view.add_regions('Reply',
@@ -189,14 +172,14 @@ class TweetCommand(sublime_plugin.TextCommand):
         try:
             self.api.destroy_status(tweet_id)
             sublime.message_dialog("Destroyed status\n")
-        except:
+        except Exception:
             sublime.message_dialog("Error (destroy tweet)\n")
 
     def retweet(self, tweet_id):
         try:
             self.api.retweet(tweet_id)
             sublime.message_dialog("Retweeted\n")
-        except:
+        except Exception:
             sublime.message_dialog("Error (retweet)\n")
 
     def favorite(self, tweet_id):
@@ -210,14 +193,14 @@ class TweetCommand(sublime_plugin.TextCommand):
         try:
             self.api.create_favorite(tweet_id)
             return "Created favorite\n"
-        except:
+        except Exception:
             return "Error (create favorite)\n"
 
     def destroy_fav(self, tweet_id):
         try:
             self.api.destroy_favorite(tweet_id)
             return "Destroyed favorite\n"
-        except:
+        except Exception:
             return "Error (destroy favorite)\n"
 
     def get_timeline(self, public_tweets):
@@ -251,25 +234,25 @@ class TweetCommand(sublime_plugin.TextCommand):
     def create_friend(self, screen_name):
         try:
             user_id = self.api.get_user(screen_name=screen_name).id
-        except:
+        except Exception:
             sublime.message_dialog("Error (user not found or other issue)")
 
         try:
             self.api.create_friendship(user_id)
             sublime.message_dialog("Created friend\n")
-        except:
+        except Exception:
             sublime.message_dialog("Error (create friend)\n")
 
     def destroy_friend(self, screen_name):
         try:
             user_id = self.api.get_user(screen_name=screen_name).id
-        except:
+        except Exception:
             sublime.message_dialog("Error (user not found or other issue)")
 
         try:
             self.api.destroy_friendship(user_id)
             sublime.message_dialog("Destroyed friend\n")
-        except:
+        except Exception:
             sublime.message_dialog("Error (destroy friend)\n")
 
     def get_user_timeline(self, screen_name=''):
