@@ -1,12 +1,12 @@
-#Twitter for SubilimeText
+# Twitter for SubilimeText
 It uses [tweepy](https://github.com/tweepy/tweepy)
 
-#Usage
-##default_setting.json
+# Usage
+## default_setting.json
 consumer_keyなどのデータを正しく入力しておく.
 site\_packages\_pathでtweepyのパスを通すので,tweepyのある場所を指定.
 
-##各種機能
+## 各種機能
 選択した文字列をコマンド及びツイートする場合はツイートする文字列として認識する.
 
 - commands
@@ -23,7 +23,7 @@ site\_packages\_pathでtweepyのパスを通すので,tweepyのある場所を�
 	- `il:` フォローリクエスト一覧を表示する
   - `mt:` 自分のツイートを取得する
 
-##コマンドパレットからの実行
+## コマンドパレットからの実行
 文字を選択した状態でコマンドパレットの`Tweet: tweet`を選ぶ.
 
 
